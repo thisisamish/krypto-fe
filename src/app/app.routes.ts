@@ -3,6 +3,7 @@ import { LoginPageComponent } from './ui/login-page/login-page.component';
 import { RegisterPageComponent } from './ui/register-page/register-page.component';
 import { HomePageComponent } from './ui/home-page/home-page.component';
 import { roleGuard } from './guards/role.guard';
+import { NotFoundPageComponent } from './ui/not-found-page/not-found-page.component';
 
 export const routes: Routes = [
   { path: '', component: HomePageComponent },
@@ -17,4 +18,5 @@ export const routes: Routes = [
     canActivate: [roleGuard],
     data: { expectedRole: 'ROLE_ADMIN' },
   },
+  { path: '**', component: NotFoundPageComponent },
 ];
