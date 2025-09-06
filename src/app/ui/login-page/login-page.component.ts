@@ -32,7 +32,14 @@ export class LoginPageComponent {
 
     this.authService.login(this.login).subscribe({
       next: (response) => {
-        this.router.navigate(['/']);
+        const role = response.role;
+        console.log('Login successful, role:', role);
+        if (role === 'ROLE_ADMIN') {
+          this.router.navigate(['/admin']);
+          return;
+        } else if (role === 'ROLE_CUSTOMER') {
+          this.router.navigate(['/']);
+        }
       },
       error: (err) => {
         console.error('Login failed:', err);

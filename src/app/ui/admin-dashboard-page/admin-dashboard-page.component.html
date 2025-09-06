@@ -1,0 +1,18 @@
+<div class="admin-container">
+  <aside class="sidebar">
+    <h2 class="sidebar-title">Admin Panel</h2>
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/products" routerLinkActive="active"
+        >Product Management</a
+      >
+      <a routerLink="/admin/users" routerLinkActive="active">User Management</a>
+      <a routerLink="/admin/orders" routerLinkActive="active">View Orders</a>
+      <!-- Add other admin links here -->
+    </nav>
+  </aside>
+
+  <main class="content-area">
+    <!-- The content for the selected admin page will be rendered here -->
+    <router-outlet></router-outlet>
+  </main>
+</div>

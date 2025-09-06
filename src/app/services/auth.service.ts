@@ -13,8 +13,10 @@ export class AuthService {
   private logoutUrl = 'http://localhost:8080/api/v1/auth/logout';
 
   private _isLoggedIn$ = new BehaviorSubject<boolean>(false);
+  private _currentUserRole$ = new BehaviorSubject<string | null>(null);
 
   isLoggedIn$ = this._isLoggedIn$.asObservable();
+  currentUserRole$ = this._currentUserRole$.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -37,6 +39,7 @@ export class AuthService {
       .pipe(
         tap((response) => {
           this._isLoggedIn$.next(true);
+          this._currentUserRole$.next(response.role);
         })
       );
   }
@@ -49,6 +52,7 @@ export class AuthService {
       .pipe(
         tap((response) => {
           this._isLoggedIn$.next(false);
+          this._currentUserRole$.next(null);
         })
       );
   }
