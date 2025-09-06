@@ -1,0 +1,114 @@
+<app-card
+  title="Create an account"
+  subtitle="Enter the details below to create an account at Krypto and start ordering groceries"
+>
+  <form
+    #contactForm="ngForm"
+    (ngSubmit)="onSubmit(contactForm)"
+    class="flex flex-col gap-6"
+  >
+    <!-- <hr>
+        <h3>Debugging Info:</h3>
+        <pre>{{ contactForm.value | json }}</pre>
+        <p>
+            Is the form valid?
+            <strong>{{ contactForm.valid }}</strong>
+        </p>
+        -->
+
+    <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-2 sm:flex-row sm:gap-4">
+        <app-form-input
+          class="sm:w-1/2 w-full"
+          label="First Name"
+          type="text"
+          placeholder="Enter your first name"
+          [(ngModel)]="register.firstName"
+          name="registerFirstName"
+          required
+        ></app-form-input>
+
+        <app-form-input
+          class="sm:w-1/2 w-full"
+          label="Middle Name"
+          type="text"
+          placeholder="Enter your middle name"
+          [(ngModel)]="register.middleName"
+          name="registerMiddleName"
+        ></app-form-input>
+      </div>
+
+      <div class="sm:flex gap-4">
+        <app-form-input
+          class="sm:w-1/2 w-full"
+          label="Last Name"
+          type="text"
+          placeholder="Enter your last name"
+          [(ngModel)]="register.lastName"
+          name="registerLastName"
+        ></app-form-input>
+
+        <app-form-input
+          class="sm:w-1/2 w-full"
+          label="Email"
+          type="email"
+          placeholder="Enter your email"
+          [(ngModel)]="register.email"
+          name="registerEmail"
+          required
+          email
+        ></app-form-input>
+      </div>
+
+      <div class="sm:flex gap-4">
+        <app-form-input
+          class="sm:w-1/2 w-full"
+          label="Username"
+          type="text"
+          placeholder="Enter an username"
+          [(ngModel)]="register.username"
+          name="registerUsername"
+          required
+        ></app-form-input>
+
+        <app-form-input
+          class="sm:w-1/2 w-full"
+          label="Password"
+          type="password"
+          placeholder="Enter a strong password"
+          [(ngModel)]="register.password"
+          name="registerPassword"
+          required
+          appStrongPassword
+        ></app-form-input>
+      </div>
+
+      <app-form-input
+        label="Address"
+        type="text"
+        placeholder="Enter your address"
+        [(ngModel)]="register.address"
+        name="registerAddress"
+        required
+      ></app-form-input>
+
+      <app-form-input
+        label="Contact Number"
+        type="text"
+        placeholder="Enter your contact number"
+        [(ngModel)]="register.contactNo"
+        name="registerContactNo"
+        required
+        appIndianContactNumber
+      ></app-form-input>
+    </div>
+
+    <button
+      [disabled]="!contactForm.valid"
+      class="p-2 rounded-md bg-green-400 text-white cursor-pointer hover:bg-green-600 disabled:bg-gray-400"
+      type="submit"
+    >
+      Submit
+    </button>
+  </form>
+</app-card>

@@ -1,0 +1,74 @@
+[
+  {
+    "name": "Amul Pasteurised Butter",
+    "size": "100 g",
+    "price": "62.00",
+    "imageUrl": "https://instamart-media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_200/emujgakbhef20bicfyn3"
+  },
+  {
+    "name": "Tata Salt, Iodised Namak",
+    "size": "1 kg",
+    "price": "30.00",
+    "imageUrl": "https://instamart-media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_200/NI_CATALOG/IMAGES/CIW/2025/1/25/72ecc69b-d682-4d18-af6d-93976914fadf_242_1.png"
+  },
+  {
+    "name": "Harvest Gold - 100% Atta Bread",
+    "size": "450 g",
+    "price": "55",
+    "imageUrl": "https://instamart-media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_200/NI_CATALOG/IMAGES/CIW/2025/1/29/420c665a-facd-4794-b3fe-1b1d4373a308_3415_1.png"
+  },
+  {
+    "name": "Pansari Kacchi Ghani Mustard Oil",
+    "size": "1 ltr",
+    "price": "210",
+    "imageUrl": "https://instamart-media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_200/NI_CATALOG/IMAGES/CIW/2025/6/6/79e87b7a-bac7-4bf3-86b4-a2f6e4e8a9ce_69432_1.png"
+  },
+  {
+    "name": "Supreme Harvest Crystal Sugar",
+    "size": "1 kg",
+    "price": "50",
+    "imageUrl": "https://instamart-media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_200/NI_CATALOG/IMAGES/CIW/2024/8/29/ff5f4dc1-c3f9-42f1-a1ee-d79ba53c24c2_15755.png"
+  },
+  {
+    "name": "Amul Masti Dahi",
+    "size": "390 g",
+    "price": "35",
+    "imageUrl": "https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_252,h_272/NI_CATALOG/IMAGES/CIW/2025/6/9/d3bada2d-ac45-4de3-941f-c7be1e1188ff_3915_1.png"
+  },
+  {
+    "name": "Mother Dairy Tadka Chach Pouch",
+    "size": "270 ml",
+    "price": "10",
+    "imageUrl": "https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_252,h_272/NI_CATALOG/IMAGES/CIW/2024/5/13/c33040af-3ccc-4b8e-8403-82ad7f1aab25_buttermilkandlassi_QRX783ZOQ7_MN.png"
+  },
+  {
+    "name": "Dr.Hen Table White Eggs - 30 pcs",
+    "size": "30 pieces",
+    "price": "235",
+    "imageUrl": "https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_252,h_272/NI_CATALOG/IMAGES/CIW/2024/6/17/13d5b678-c5d0-48ce-ae83-af126c668f4f_eggs_LOK57NRLSK_MN.png"
+  },
+  {
+    "name": "Lay's India's Magic Masala Chips",
+    "size": "48 g",
+    "price": "20",
+    "imageUrl": "https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_252,h_272/NI_CATALOG/IMAGES/CIW/2024/8/1/a19b918c-0bad-4c0f-b751-48a8393e4bb0_673_1.png"
+  },
+  {
+    "name": "Indian Tomato",
+    "size": "500 g",
+    "price": "55",
+    "imageUrl": "https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_252,h_272/054e83b5ebe789cf4b7b146319df4cfc"
+  },
+  {
+    "name": "Aashirvaad Shudh Chakki Atta",
+    "size": "5 kg",
+    "price": "235",
+    "imageUrl": "https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_252,h_272/a82c01b4760dc2ac81163a82f6aaa95d"
+  },
+  {
+    "name": "Amul Fresh Paneer",
+    "size": "200 g",
+    "price": "95",
+    "imageUrl": "https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_252,h_272/NI_CATALOG/IMAGES/CIW/2024/10/10/03d14934-74c2-46e5-ac2a-a833222d9137_2844.png"
+  }
+]

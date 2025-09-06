@@ -1,0 +1,53 @@
+<app-card
+  title="Login to your account"
+  subtitle="Enter your username and password to login to your account"
+>
+  <form
+    #loginForm="ngForm"
+    (ngSubmit)="onSubmit(loginForm)"
+    class="flex flex-col gap-6"
+  >
+    <!-- <hr>
+        <h3>Debugging Info:</h3>
+        <pre>{{ loginForm.value | json }}</pre>
+        <p>
+            Is the form valid?
+            <strong>{{ loginForm.valid }}</strong>
+        </p> -->
+
+    <div class="flex flex-col gap-2">
+      <app-form-input
+        label="Username"
+        type="text"
+        placeholder="Enter an username"
+        [(ngModel)]="login.username"
+        name="loginUsername"
+        required
+      ></app-form-input>
+
+      <app-form-input
+        label="Password"
+        type="password"
+        placeholder="Enter a strong password"
+        [(ngModel)]="login.password"
+        name="loginPassword"
+        required
+      ></app-form-input>
+    </div>
+
+    <div
+      *ngIf="errorMessage"
+      class="text-red-900 bg-red-300 border border-red-900 rounded-sm text-center py-1"
+    >
+      {{ errorMessage }}
+    </div>
+
+    <button
+      [disabled]="!loginForm.valid"
+      class="p-2 rounded-md bg-green-400 text-white cursor-pointer hover:bg-green-600 disabled:bg-gray-400"
+      type="submit"
+    >
+      Login
+    </button>
+  </form>
+</app-card>

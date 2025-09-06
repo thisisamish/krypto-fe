@@ -1,0 +1,35 @@
+<div class="flex flex-col">
+  <label [for]="label">
+    {{ label }}<span *ngIf="required" class="text-red-500 ml-1">*</span>
+  </label>
+  <input
+    class="rounded-md border border-gray-400 py-1 px-2 placeholder:text-gray-400"
+    [type]="type"
+    [id]="label"
+    [placeholder]="placeholder"
+    [value]="value"
+    [disabled]="isDisabled"
+    (input)="onInputChange($event)"
+    (blur)="onTouched()"
+  />
+
+  <div
+    *ngIf="ngControl?.invalid && (ngControl?.dirty || ngControl?.touched)"
+    class="error"
+  >
+    <div *ngIf="ngControl.errors?.['required']">{{ label }} is required.</div>
+    <div *ngIf="ngControl.errors?.['minlength']">
+      Name must be at least
+      {{ ngControl.errors?.['minlength'].requiredLength }} characters long.
+    </div>
+    <div *ngIf="ngControl.errors?.['email']">
+      Please enter a valid email address.
+    </div>
+    <div *ngIf="ngControl.errors?.['strongPassword']">
+      Password must contain at least one number and one special character.
+    </div>
+    <div *ngIf="ngControl.errors?.['invalidContactNumber']">
+      Please enter a valid 10-digit contact number.
+    </div>
+  </div>
+</div>

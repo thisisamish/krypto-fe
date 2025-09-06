@@ -1,0 +1,14 @@
+<div class="card flex flex-col md:flex-row gap-4">
+  <p-inputgroup>
+    <input pInputText placeholder="Keyword" />
+    <p-inputgroup-addon>
+      <p-button
+        icon="pi pi-search"
+        severity="secondary"
+        variant="text"
+        (click)="menu.toggle($event)"
+      />
+    </p-inputgroup-addon>
+  </p-inputgroup>
+  <p-menu #menu [model]="items" popup styleClass="!min-w-fit" />
+</div>
