@@ -9,11 +9,22 @@
       [rounded]="true"
       [text]="true"
     ></p-button>
-    <p-button
-      icon="pi pi-shopping-cart"
-      styleClass="large-navbar-icon"
-      [rounded]="true"
-      [text]="true"
-    ></p-button>
+    <div class="relative">
+      <button
+        type="button"
+        class="btn btn-ghost btn-md rounded-full !w-10 !h-10 p-0"
+        (click)="cart.openDrawer()"
+        aria-label="Cart"
+      >
+        <!-- any icon/svg here -->
+        <span class="pi pi-shopping-cart"></span>
+      </button>
+      <span
+        *ngIf="cart.totalCount() > 0"
+        class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[1.2rem] text-center"
+      >
+        {{ cart.totalCount() }}
+      </span>
+    </div>
   </div>
 </nav>

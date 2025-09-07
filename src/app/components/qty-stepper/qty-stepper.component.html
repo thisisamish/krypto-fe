@@ -1,0 +1,38 @@
+<div
+  class="stepper"
+  [class.stepper--sm]="size === 'sm'"
+  [class.stepper--md]="size === 'md'"
+>
+  <button
+    type="button"
+    class="stepper__btn"
+    (click)="decrement()"
+    [disabled]="disabled || value <= min"
+    aria-label="Decrease quantity"
+  >
+    −
+  </button>
+
+  <input
+    type="number"
+    class="stepper__input"
+    [value]="value"
+    [min]="min"
+    [max]="max ?? undefined"
+    [step]="step"
+    (input)="onInput($event)"
+    (blur)="onBlur()"
+    inputmode="numeric"
+    aria-label="Quantity"
+  />
+
+  <button
+    type="button"
+    class="stepper__btn"
+    (click)="increment()"
+    [disabled]="disabled || (max !== null && value >= max)"
+    aria-label="Increase quantity"
+  >
+    +
+  </button>
+</div>

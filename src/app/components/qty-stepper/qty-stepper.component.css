@@ -1,0 +1,34 @@
+/* Tailwind-powered utility classes via @apply */
+@layer components {
+  /* Outer box: fixed size + 3 columns (btn, input, btn) */
+  .stepper {
+    @apply inline-grid rounded-lg border border-gray-300 overflow-hidden select-none box-border;
+    /* 2.5rem (= w-10) button, flexible input, 2.5rem button */
+    grid-template-columns: 2.5rem 1fr 2.5rem;
+  }
+  .stepper--sm {
+    @apply h-8  w-28;
+  } /* 32px x 112px */
+  .stepper--md {
+    @apply h-10 w-32;
+  } /* 40px x 128px */
+
+  .stepper__btn {
+    @apply flex items-center justify-center h-full w-full
+           focus:outline-none focus:ring hover:bg-gray-50
+           disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .stepper__input {
+    @apply h-full w-full min-w-0 text-center outline-none;
+  }
+}
+
+/* Hide native number spinners for a cleaner look (optional) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}

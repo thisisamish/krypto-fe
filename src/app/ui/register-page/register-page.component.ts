@@ -5,8 +5,8 @@ import { FormInputComponent } from '../../components/form-input/form-input.compo
 import { StrongPasswordDirective } from '../../directives/strong-password.directive';
 import { IndianContactNumberDirective } from '../../directives/indian-contact-number.directive';
 import { AuthService } from '../../services/auth.service';
-import { User } from '../../models/user.model';
 import { CardComponent } from '../../components/card/card.component';
+import { RegisterPayload } from '../../models/auth.dto';
 
 @Component({
   selector: 'app-register-page',
@@ -22,7 +22,8 @@ import { CardComponent } from '../../components/card/card.component';
   styleUrl: './register-page.component.css',
 })
 export class RegisterPageComponent {
-  register: User = {
+  // Use the write-DTO (RegisterPayload), not the read model
+  register: RegisterPayload = {
     username: '',
     firstName: '',
     middleName: '',
@@ -41,17 +42,22 @@ export class RegisterPageComponent {
       return;
     }
 
-    console.log('Submitting user:', this.register);
+    console.log('Submitting user:', {
+      ...this.register,
+      password: '[REDACTED]',
+    });
 
     this.authService.register(this.register).subscribe({
       next: (response) => {
         console.log('Registration successful!', response);
         alert('User registered successfully!');
-        form.reset();
+        // Clear password locally after submit
+        this.register.password = '';
+        form.resetForm(); // resets template-driven form
       },
       error: (err) => {
         console.error('Registration failed:', err);
-        alert(`Registration failed: ${err.error.message || 'Server error'}`);
+        alert(`Registration failed: ${err?.error?.message || 'Server error'}`);
       },
     });
   }
