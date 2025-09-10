@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, map } from 'rxjs';
 import { User } from '../models/user.model';
 import { LoginPayload, RegisterPayload } from '../models/auth.dto';
 
@@ -31,17 +31,21 @@ export class AuthService {
       : null;
   }
 
-  /** Registration uses write-DTO (not User read model) */
-  register(payload: RegisterPayload): Observable<User> {
+  /**
+   * Register user against a backend that responds with 204 No Content.
+   * We return Observable<void> and do not toggle login flags here.
+   */
+  register(payload: RegisterPayload): Observable<void> {
     return this.http
-      .post<User>(this.registerUrl, payload, { withCredentials: true })
+      .post<void>(this.registerUrl, payload, {
+        withCredentials: true,
+        observe: 'response',
+      })
       .pipe(
-        tap((user) => {
-          // If your backend logs the user in upon registration, set session flags here:
-          this._isLoggedIn$.next(true);
-          // If backend gives a role string, normalize it; else infer from user if present
-          const role = (user as any)?.role as string | undefined;
-          this._currentUserRole$.next(this.normalizeRole(role));
+        map((res) => {
+          // Expect 204; treat any 2xx as success.
+          if (res.ok) return;
+          throw new Error(`Unexpected status: ${res.status}`);
         })
       );
   }

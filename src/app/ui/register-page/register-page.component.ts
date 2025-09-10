@@ -7,6 +7,8 @@ import { IndianContactNumberDirective } from '../../directives/indian-contact-nu
 import { AuthService } from '../../services/auth.service';
 import { CardComponent } from '../../components/card/card.component';
 import { RegisterPayload } from '../../models/auth.dto';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register-page',
@@ -19,7 +21,6 @@ import { RegisterPayload } from '../../models/auth.dto';
     IndianContactNumberDirective,
   ],
   templateUrl: './register-page.component.html',
-  styleUrl: './register-page.component.css',
 })
 export class RegisterPageComponent {
   // Use the write-DTO (RegisterPayload), not the read model
@@ -34,7 +35,7 @@ export class RegisterPageComponent {
     contactNo: '',
   };
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   onSubmit(form: NgForm) {
     if (form.invalid) {
@@ -48,17 +49,38 @@ export class RegisterPageComponent {
     });
 
     this.authService.register(this.register).subscribe({
-      next: (response) => {
-        console.log('Registration successful!', response);
+      next: () => {
+        console.log('Registration successful! (204 No Content)');
         alert('User registered successfully!');
         // Clear password locally after submit
         this.register.password = '';
         form.resetForm(); // resets template-driven form
+
+        // Redirect to login page
+        this.router.navigate(['/login']);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         console.error('Registration failed:', err);
-        alert(`Registration failed: ${err?.error?.message || 'Server error'}`);
+        alert(`Registration failed: ${this.extractErrorMessage(err)}`);
       },
     });
+  }
+
+  private extractErrorMessage(err: HttpErrorResponse): string {
+    // Spring validation often returns { errors: [{ field, defaultMessage }...] } or { message: "..." }
+    const anyErr = err?.error as any;
+
+    if (typeof anyErr === 'string' && anyErr.trim()) return anyErr;
+
+    if (anyErr?.message) return anyErr.message;
+
+    if (Array.isArray(anyErr?.errors) && anyErr.errors.length) {
+      // Join all validation messages
+      return anyErr.errors
+        .map((e: any) => e.defaultMessage || e.message || JSON.stringify(e))
+        .join('\n');
+    }
+
+    return 'Server error';
   }
 }
