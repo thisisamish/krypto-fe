@@ -2,13 +2,19 @@
   <div>
     <p class="text-[1.7rem] font-black">KRYPTO</p>
   </div>
+
   <div class="flex gap-4">
-    <p-button
-      icon="pi pi-user"
-      styleClass="large-navbar-icon"
-      [rounded]="true"
-      [text]="true"
-    ></p-button>
+    <!-- ACCOUNT button (like Cart), routes to /profile -->
+    <button
+      type="button"
+      class="btn btn-ghost btn-md rounded-full !w-10 !h-10 p-0"
+      (click)="goToProfile()"
+      aria-label="Account"
+    >
+      <span class="pi pi-user"></span>
+    </button>
+
+    <!-- CART button (existing) -->
     <div class="relative">
       <button
         type="button"
@@ -16,7 +22,6 @@
         (click)="cart.openDrawer()"
         aria-label="Cart"
       >
-        <!-- any icon/svg here -->
         <span class="pi pi-shopping-cart"></span>
       </button>
       <span
