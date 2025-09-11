@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { CartService } from '../../services/cart.service';
 import { Router } from '@angular/router';
@@ -9,7 +8,7 @@ import { take } from 'rxjs';
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [ButtonModule, CommonModule],
+  imports: [CommonModule],
   template: `
     <nav class="flex justify-between items-center h-[4rem]">
       <div>
