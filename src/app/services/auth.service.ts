@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, tap, map } from 'rxjs';
+import { BehaviorSubject, Observable, tap, map, catchError, of } from 'rxjs';
 import { User } from '../models/user.model';
 import { LoginPayload, RegisterPayload } from '../models/auth.dto';
 
@@ -11,6 +11,7 @@ export class AuthService {
   private registerUrl = 'http://localhost:8080/api/v1/auth/register';
   private loginUrl = 'http://localhost:8080/api/v1/auth/login';
   private logoutUrl = 'http://localhost:8080/api/v1/auth/logout';
+  private meUrl = 'http://localhost:8080/api/v1/auth/me'; // Endpoint to check session status
 
   private _isLoggedIn$ = new BehaviorSubject<boolean>(false);
   private _currentUserRole$ = new BehaviorSubject<NormalizedRole>(null);
@@ -19,7 +20,32 @@ export class AuthService {
   isLoggedIn$ = this._isLoggedIn$.asObservable();
   currentUserRole$ = this._currentUserRole$.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    // Check for an existing session when the service is initialized
+    this.checkAuthenticationStatus().subscribe();
+  }
+
+  /**
+   * Checks the backend for a valid session cookie and updates the login state.
+   * This is called once on application startup.
+   */
+  checkAuthenticationStatus(): Observable<any> {
+    return this.http.get<any>(this.meUrl, { withCredentials: true }).pipe(
+      tap((response) => {
+        // If we get a valid response, the user is logged in.
+        this._isLoggedIn$.next(true);
+        const normalized = this.normalizeRole(response?.role);
+        this._currentUserRole$.next(normalized);
+      }),
+      catchError((error) => {
+        // If the request fails (e.g., 401 Unauthorized), the user is not logged in.
+        this._isLoggedIn$.next(false);
+        this._currentUserRole$.next(null);
+        // Return an empty observable to let the application continue.
+        return of(null);
+      })
+    );
+  }
 
   /** Convert backend style (e.g., "ROLE_ADMIN") -> "admin" */
   normalizeRole(role: string | null | undefined): NormalizedRole {

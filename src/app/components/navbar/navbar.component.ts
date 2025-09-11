@@ -9,13 +9,67 @@ import { AuthService } from '../../services/auth.service'; // uses your isLogged
   selector: 'app-navbar',
   standalone: true,
   imports: [ButtonModule, CommonModule],
-  templateUrl: './navbar.component.html',
+  template: `
+    <nav class="flex justify-between items-center h-[4rem]">
+      <div>
+        <p class="text-[1.7rem] font-black">KRYPTO</p>
+      </div>
+
+      <div *ngIf="!(auth.isLoggedIn$ | async)">
+        <button
+          class="rounded-md px-6 py-2 bg-green-600 cursor-pointer text-white hover:bg-green-700 transition"
+          (click)="router.navigate(['/login'])"
+        >
+          Login
+        </button>
+      </div>
+
+      <div *ngIf="auth.isLoggedIn$ | async" class="flex gap-4">
+        <!-- ACCOUNT button (like Cart), routes to /profile -->
+        <button
+          type="button"
+          class="btn btn-ghost btn-md rounded-full !w-10 !h-10 p-0"
+          (click)="goToProfile()"
+          aria-label="Account"
+        >
+          <span class="pi pi-user"></span>
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-ghost btn-md rounded-full !w-10 !h-10 p-0"
+          (click)="goToProfile()"
+          aria-label="Account"
+        >
+          <span class="pi pi-user"></span>
+        </button>
+
+        <!-- CART button (existing) -->
+        <div class="relative">
+          <button
+            type="button"
+            class="btn btn-ghost btn-md rounded-full !w-10 !h-10 p-0"
+            (click)="cart.openDrawer()"
+            aria-label="Cart"
+          >
+            <span class="pi pi-shopping-cart"></span>
+          </button>
+          <span
+            *ngIf="cart.totalCount() > 0"
+            class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[1.2rem] text-center"
+          >
+            {{ cart.totalCount() }}
+          </span>
+        </div>
+      </div>
+    </nav>
+  `,
 })
 export class NavbarComponent {
   constructor(
     public readonly cart: CartService,
-    private readonly router: Router,
-    private readonly auth: AuthService
+    public readonly router: Router,
+    public readonly auth: AuthService
   ) {}
 
   goToProfile() {

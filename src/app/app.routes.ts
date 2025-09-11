@@ -33,7 +33,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['admin'] },
+    data: { expectedRole: 'admin' },
     loadComponent: () =>
       import('./ui/admin-dashboard-page/admin-dashboard-page.component').then(
         (m) => m.AdminDashboardPageComponent

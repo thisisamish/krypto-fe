@@ -31,11 +31,11 @@ export class AdminProductsService {
     return this.http.post<Product>(this.base, payload);
   }
 
-  update(id: string, payload: Partial<Product>): Observable<Product> {
+  update(id: number, payload: Partial<Product>): Observable<Product> {
     return this.http.put<Product>(`${this.base}/${id}`, payload);
   }
 
-  delete(id: string): Observable<void> {
+  delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
 }

@@ -145,14 +145,14 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
             @for (p of page()?.items ?? []; track p.id) {
             <tr class="border-t">
               <td class="px-4 py-3">{{ p.name }}</td>
-              <td class="px-4 py-3">{{ p.sku }}</td>
+              <!-- <td class="px-4 py-3">{{ p.sku }}</td> -->
               <td class="px-4 py-3">{{ p.price | currency : 'INR' }}</td>
-              <td class="px-4 py-3">{{ p.stock }}</td>
-              <td class="px-4 py-3">
+              <td class="px-4 py-3">{{ p.stock_quantity }}</td>
+              <!-- <td class="px-4 py-3">
                 @if (p.active) { <span class="text-green-600">Yes</span> } @else
                 { <span class="text-red-600">No</span> }
-              </td>
-              <td class="px-4 py-3">{{ p.updatedAt | date : 'short' }}</td>
+              </td> -->
+              <!-- <td class="px-4 py-3">{{ p.updatedAt | date : 'short' }}</td> -->
               <td class="px-4 py-3 text-right">
                 <button
                   (click)="toggleActive(p)"
@@ -298,7 +298,7 @@ export class ProductsComponent {
 
   toggleActive(p: Product) {
     this.svc
-      .update(p.id, { active: !p.active })
+      .update(p.id, {})
       .pipe(takeUntilDestroyed())
       .subscribe(() => this.load());
   }

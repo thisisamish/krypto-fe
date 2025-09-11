@@ -1,37 +1,3 @@
 @import "tailwindcss";
 @plugin "tailwindcss-primeui";
 @import "primeicons/primeicons.css";
-
-.large-navbar-icon .p-button-icon {
-  font-size: 1.45rem;
-}
-
-/* styles.css */
-@layer components {
-  .btn {
-    @apply inline-flex items-center justify-center rounded-lg font-semibold
-         transition-colors duration-150 disabled:opacity-50 disabled:pointer-events-none;
-  }
-  .btn-sm {
-    @apply h-8 text-sm;
-  }
-  .btn-md {
-    @apply h-10 text-[0.95rem];
-  } /* matches stepper 'md' height */
-
-  /* width token that matches the stepper 'md' width */
-  .btn-w-stepper-md {
-    @apply w-32;
-  }
-  .btn-w-stepper-sm {
-    @apply w-28;
-  }
-
-  /* variants */
-  .btn-primary {
-    @apply bg-black text-white border border-black hover:bg-gray-900;
-  }
-  .btn-ghost {
-    @apply bg-transparent text-gray-800 border border-gray-300 hover:bg-gray-50;
-  }
-}

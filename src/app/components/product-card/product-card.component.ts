@@ -24,8 +24,44 @@ type Product = {
   selector: 'app-product-card',
   standalone: true,
   imports: [QtyStepperComponent, ButtonModule, DecimalPipe, CommonModule],
-  templateUrl: './product-card.component.html',
-  styleUrls: ['./product-card.component.css'],
+  template: `
+    <div class="w-[8rem] rounded-lg flex flex-col gap-2">
+      <div
+        class="rounded-xl overflow-hidden h-[8rem] w-[8rem] border border-gray-200"
+      >
+        <img class="object-cover size-full" [src]="item.imageUrl" alt="" />
+      </div>
+
+      <div>
+        <p class="text-[0.95rem] font-semibold line-clamp-2 h-[2.75rem]">
+          {{ item.name }}
+        </p>
+        <p class="text-gray-600 text-xs">{{ item.size }}</p>
+        <p class="text-[0.95rem] font-bold">₹ {{ item.price }}</p>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <ng-container *ngIf="qty() === 0; else qtyInput">
+          <button
+            type="button"
+            class="btn btn-primary btn-md btn-w-stepper-md"
+            (click)="addToCart()"
+          >
+            Add to Cart
+          </button>
+        </ng-container>
+
+        <ng-template #qtyInput>
+          <app-qty-stepper
+            [value]="qty()"
+            (valueChange)="cart.setQuantity(itemKey, $event, item)"
+            [min]="0"
+            size="md"
+          ></app-qty-stepper>
+        </ng-template>
+      </div>
+    </div>
+  `,
 })
 export class ProductCardComponent implements OnChanges {
   @Input({ required: true }) item!: Product;

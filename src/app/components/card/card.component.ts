@@ -3,8 +3,20 @@ import { Component, Input } from '@angular/core';
 @Component({
   selector: 'app-card',
   imports: [],
-  templateUrl: './card.component.html',
-  styleUrl: './card.component.css',
+  template: `
+    <div class="flex items-center justify-center">
+      <div
+        class="max-w-xl border border-gray-200 rounded-2xl px-8 pt-10 pb-8 flex flex-col gap-6"
+      >
+        <div class="flex flex-col gap-2">
+          <h1 class="text-3xl font-semibold">{{ title }}</h1>
+          <p class="text-gray-600">{{ subtitle }}</p>
+        </div>
+
+        <ng-content></ng-content>
+      </div>
+    </div>
+  `,
 })
 export class CardComponent {
   @Input() title: string = '';

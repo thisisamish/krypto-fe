@@ -1,12 +1,19 @@
 export interface Product {
-  id: string;
+  id: number;
   name: string;
-  sku: string;
+  description: string;
+  size: string;
   price: number;
-  stock: number;
-  active: boolean;
-  description?: string;
-  images?: string[];
-  createdAt: string; // ISO
-  updatedAt: string; // ISO
+  stock_quantity: number;
+  discount_percent: number;
+  image_url: string;
+  created_at?: Date;
+}
+
+export interface PaginatedProductResponse {
+  content: Product[];
+  totalPages: number;
+  totalElements: number;
+  number: number; // The current page number
+  size: number;
 }
