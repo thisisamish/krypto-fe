@@ -7,7 +7,6 @@ import {
   Signal,
   computed,
 } from '@angular/core';
-import { ButtonModule } from 'primeng/button';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { CartService } from '../../services/cart.service'; // adjust path
 import { QtyStepperComponent } from '../qty-stepper/qty-stepper.component';
@@ -23,7 +22,7 @@ type Product = {
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [QtyStepperComponent, ButtonModule, DecimalPipe, CommonModule],
+  imports: [QtyStepperComponent, DecimalPipe, CommonModule],
   template: `
     <div class="w-[8rem] rounded-lg flex flex-col gap-2">
       <div
