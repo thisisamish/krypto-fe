@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { CartService } from '../../services/cart.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service'; // uses your isLoggedIn$
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
@@ -24,17 +25,18 @@ import { AuthService } from '../../services/auth.service'; // uses your isLogged
         </button>
       </div>
 
-      <div *ngIf="auth.isLoggedIn$ | async" class="flex gap-4">
-        <!-- ACCOUNT button (like Cart), routes to /profile -->
+      <div *ngIf="auth.isLoggedIn$ | async" class="flex gap-4 items-center">
+        <!-- LOGOUT button -->
         <button
           type="button"
           class="btn btn-ghost btn-md rounded-full !w-10 !h-10 p-0"
-          (click)="goToProfile()"
-          aria-label="Account"
+          (click)="logout()"
+          aria-label="Logout"
         >
-          <span class="pi pi-user"></span>
+          <span class="pi pi-sign-out"></span>
         </button>
 
+        <!-- ACCOUNT button (like Cart), routes to /profile -->
         <button
           type="button"
           class="btn btn-ghost btn-md rounded-full !w-10 !h-10 p-0"
@@ -72,12 +74,24 @@ export class NavbarComponent {
     public readonly auth: AuthService
   ) {}
 
+  logout(): void {
+    this.auth.logout().subscribe({
+      next: () => {
+        // Navigate to the login page after successful logout
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        console.error('Logout failed', err);
+        // Fallback navigation in case of an error
+        this.router.navigate(['/login']);
+      },
+    });
+  }
+
   goToProfile() {
-    // if not logged in, send to login first
-    this.auth.isLoggedIn$
-      .subscribe((logged) => {
-        this.router.navigate([logged ? '/profile' : '/login']);
-      })
-      .unsubscribe();
+    // Use take(1) to automatically unsubscribe after the first emission.
+    this.auth.isLoggedIn$.pipe(take(1)).subscribe((logged) => {
+      this.router.navigate([logged ? '/profile' : '/login']);
+    });
   }
 }
