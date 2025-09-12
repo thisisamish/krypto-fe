@@ -1,7 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, tap, map, catchError, of } from 'rxjs';
-import { User } from '../models/user.model';
+import { BehaviorSubject, Observable, tap, catchError, of, map } from 'rxjs';
 import { LoginPayload, RegisterPayload } from '../models/auth.dto';
 
 type NormalizedRole = 'admin' | 'customer' | null;
@@ -21,7 +20,8 @@ export class AuthService {
   currentUserRole$ = this._currentUserRole$.asObservable();
 
   constructor(private http: HttpClient) {
-    // Check for an existing session when the service is initialized
+    // Check for an existing session when the service is initialized.
+    // This will automatically log in the admin or customer if a valid session exists.
     this.checkAuthenticationStatus().subscribe();
   }
 
@@ -59,7 +59,6 @@ export class AuthService {
 
   /**
    * Register user against a backend that responds with 204 No Content.
-   * We return Observable<void> and do not toggle login flags here.
    */
   register(payload: RegisterPayload): Observable<void> {
     return this.http
@@ -76,7 +75,7 @@ export class AuthService {
       );
   }
 
-  /** Form-URL-Encoded login, as you had it */
+  /** Form-URL-Encoded login */
   login(loginUser: LoginPayload) {
     const body = new HttpParams()
       .set('username', loginUser.username)
@@ -100,6 +99,7 @@ export class AuthService {
       );
   }
 
+  /** Logs the user out and clears the session state */
   logout() {
     return this.http
       .post<any>(this.logoutUrl, null, { withCredentials: true })

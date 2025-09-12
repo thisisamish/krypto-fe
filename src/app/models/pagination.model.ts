@@ -1,6 +1,7 @@
 export interface Page<T> {
-  items: T[];
-  page: number;
-  pageSize: number;
-  total: number;
+  content: T[];
+  totalPages: number;
+  totalElements: number;
+  number: number; // The current page number (often 0-indexed)
+  size: number;
 }

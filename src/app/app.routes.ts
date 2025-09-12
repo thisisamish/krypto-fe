@@ -32,7 +32,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    canActivate: [authGuard, roleGuard],
+    canActivate: [authGuard, roleGuard], // First checks for login, then for admin role.
     data: { expectedRole: 'admin' },
     loadComponent: () =>
       import('./ui/admin-dashboard-page/admin-dashboard-page.component').then(

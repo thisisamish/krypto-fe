@@ -3,13 +3,10 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 import { AdminUsersService } from '../../../services/admin-users.service';
 import { Page } from '../../../models/pagination.model';
 import { User } from '../../../models/user.model';
-import {
-  debounceTime,
-  distinctUntilChanged,
-  startWith,
-  switchMap,
-} from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+// FIXED: Imported combineLatest from 'rxjs' and removed unused 'startWith'
+import { Observable, combineLatest } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -66,7 +63,8 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
             </tr>
           </thead>
           <tbody>
-            @for (u of page()?.items ?? []; track u.id) {
+            <!-- CHANGED: Use page()?.content instead of items -->
+            @for (u of page()?.content ?? []; track u.id) {
             <tr class="border-t">
               <td class="px-4 py-3">{{ u.name }}</td>
               <td class="px-4 py-3">{{ u.email }}</td>
@@ -82,15 +80,16 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
                 <button
                   (click)="logout(u)"
                   class="rounded-lg border px-2 py-1 bg-white text-amber-700"
+                  title="Force Logout"
                 >
                   <i class="pi pi-sign-out"></i>
                 </button>
               </td>
             </tr>
-            } @if (!page() || (page()?.items?.length ?? 0) === 0) {
+            } @if (!page() || (page()?.content?.length ?? 0) === 0) {
             <tr>
               <td colspan="6" class="px-4 py-8 text-center text-neutral-500">
-                No users found.
+                No users found for the selected filters.
               </td>
             </tr>
             }
@@ -98,19 +97,22 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
         </table>
       </div>
 
+      <!-- Pagination corrected -->
       <div class="flex items-center justify-end gap-2">
         <button
           (click)="prev()"
           class="rounded-lg border px-3 py-2 bg-white"
-          [disabled]="page()?.page === 1"
+          [disabled]="(page()?.number ?? 0) === 0"
         >
           Prev
         </button>
-        <span class="text-sm">Page {{ page()?.page ?? 1 }}</span>
+        <span class="text-sm">
+          Page {{ (page()?.number ?? 0) + 1 }} of {{ page()?.totalPages ?? 1 }}
+        </span>
         <button
           (click)="next()"
           class="rounded-lg border px-3 py-2 bg-white"
-          [disabled]="(page()?.page ?? 1) >= totalPages()"
+          [disabled]="(page()?.number ?? 0) + 1 >= (page()?.totalPages ?? 1)"
         >
           Next
         </button>
@@ -123,37 +125,22 @@ export class UsersComponent {
 
   readonly page = signal<Page<User> | null>(null);
   readonly pageSize = signal(10);
-  readonly pageIndex = signal(1);
+  readonly pageIndex = signal(1); // User-facing page number (1-based)
 
+  // Filter signals
   readonly q = signal('');
   readonly role = signal<'' | 'admin' | 'customer'>('');
   readonly status = signal<'' | 'active' | 'locked'>('');
 
   constructor() {
-    // Search (q)
-    toObservable(this.q)
-      .pipe(
-        startWith(this.q()),
-        debounceTime(300),
-        distinctUntilChanged(),
-        switchMap(() => this.fetch$()),
-        takeUntilDestroyed()
-      )
-      .subscribe((p) => this.page.set(p));
+    // COMBINED: Efficiently combine all filters into a single stream
+    const q$ = toObservable(this.q).pipe(debounceTime(300));
+    const role$ = toObservable(this.role);
+    const status$ = toObservable(this.status);
+    const page$ = toObservable(this.pageIndex);
 
-    // Role filter
-    toObservable(this.role)
+    combineLatest([q$, role$, status$, page$])
       .pipe(
-        startWith(this.role()),
-        switchMap(() => this.fetch$()),
-        takeUntilDestroyed()
-      )
-      .subscribe((p) => this.page.set(p));
-
-    // Status filter
-    toObservable(this.status)
-      .pipe(
-        startWith(this.status()),
         switchMap(() => this.fetch$()),
         takeUntilDestroyed()
       )
@@ -163,19 +150,22 @@ export class UsersComponent {
   // ==== Template event handlers (no casts in template) ====
   onSearchInput(event: Event) {
     const input = event.target as HTMLInputElement;
+    this.pageIndex.set(1); // Reset page on new search
     this.q.set(input.value);
   }
   onRoleChange(event: Event) {
     const select = event.target as HTMLSelectElement;
+    this.pageIndex.set(1); // Reset page on filter change
     this.role.set((select.value as 'admin' | 'customer' | '') ?? '');
   }
   onStatusChange(event: Event) {
     const select = event.target as HTMLSelectElement;
+    this.pageIndex.set(1); // Reset page on filter change
     this.status.set((select.value as 'active' | 'locked' | '') ?? '');
   }
 
   // ==== Data loading pattern ====
-  fetch$() {
+  fetch$(): Observable<Page<User>> {
     return this.svc.list({
       page: this.pageIndex(),
       pageSize: this.pageSize(),
@@ -184,34 +174,35 @@ export class UsersComponent {
       status: (this.status() || undefined) as any,
     });
   }
+
+  // Kept for manual reloads like after forcing a logout
   load() {
     return this.fetch$()
       .pipe(takeUntilDestroyed())
       .subscribe((p) => this.page.set(p));
   }
 
-  totalPages() {
-    const p = this.page();
-    if (!p) return 1;
-    return Math.max(1, Math.ceil(p.total / p.pageSize));
-  }
-
   next() {
+    if ((this.page()?.number ?? 0) + 1 >= (this.page()?.totalPages ?? 1))
+      return;
     this.pageIndex.update((x) => x + 1);
-    this.load();
   }
   prev() {
     this.pageIndex.update((x) => Math.max(1, x - 1));
-    this.load();
   }
 
   logout(u: User) {
-    if (!confirm(`Force logout ${u.email}?`)) return;
+    if (
+      !confirm(
+        `Force logout user ${u.email}? This will invalidate their session.`
+      )
+    )
+      return;
     this.svc
       .forceLogout(u.id)
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
-        // Optionally refresh
+        // We can reload the data to see if their 'lastActiveAt' status changes
         this.load();
       });
   }

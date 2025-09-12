@@ -1,9 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { AsyncPipe, DatePipe, CurrencyPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AdminProductsService } from '../../../services/admin-products.service';
-import { Page } from '../../../models/pagination.model';
-import { Product } from '../../../models/product.model';
+import {
+  PaginatedProductResponse,
+  Product,
+} from '../../../models/product.model';
 import {
   debounceTime,
   distinctUntilChanged,
@@ -11,6 +13,7 @@ import {
   switchMap,
 } from 'rxjs/operators';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Page } from '../../../models/pagination.model';
 
 @Component({
   standalone: true,
@@ -42,19 +45,24 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
             placeholder="Product name"
           />
           @if (invalid('name')) {
-          <p class="text-sm text-red-600 mt-1">Name required</p>
+          <p class="text-sm text-red-600 mt-1">Name is required</p>
           }
         </div>
         <div>
-          <label class="block text-sm font-medium">SKU</label>
+          <label class="block text-sm font-medium">Size</label>
           <input
-            formControlName="sku"
+            formControlName="size"
             class="mt-1 w-full rounded-lg border px-3 py-2"
-            placeholder="SKU-001"
+            placeholder="e.g., Large, 1kg"
           />
-          @if (invalid('sku')) {
-          <p class="text-sm text-red-600 mt-1">SKU required</p>
-          }
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Image URL</label>
+          <input
+            formControlName="image_url"
+            class="mt-1 w-full rounded-lg border px-3 py-2"
+            placeholder="https://..."
+          />
         </div>
         <div>
           <label class="block text-sm font-medium">Price</label>
@@ -65,30 +73,32 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
             placeholder="0"
           />
           @if (invalid('price')) {
-          <p class="text-sm text-red-600 mt-1">Price ≥ 0</p>
+          <p class="text-sm text-red-600 mt-1">Price must be ≥ 0</p>
           }
         </div>
         <div>
-          <label class="block text-sm font-medium">Stock</label>
+          <label class="block text-sm font-medium">Stock Quantity</label>
           <input
             type="number"
-            formControlName="stock"
+            formControlName="stock_quantity"
             class="mt-1 w-full rounded-lg border px-3 py-2"
             placeholder="0"
           />
-          @if (invalid('stock')) {
-          <p class="text-sm text-red-600 mt-1">Stock ≥ 0</p>
+          @if (invalid('stock_quantity')) {
+          <p class="text-sm text-red-600 mt-1">Stock must be ≥ 0</p>
           }
         </div>
         <div>
-          <label class="block text-sm font-medium">Active</label>
-          <select
-            formControlName="active"
+          <label class="block text-sm font-medium">Discount Percent</label>
+          <input
+            type="number"
+            formControlName="discount_percent"
             class="mt-1 w-full rounded-lg border px-3 py-2"
-          >
-            <option [ngValue]="true">Yes</option>
-            <option [ngValue]="false">No</option>
-          </select>
+            placeholder="0"
+          />
+          @if (invalid('discount_percent')) {
+          <p class="text-sm text-red-600 mt-1">Discount must be 0-100</p>
+          }
         </div>
         <div class="sm:col-span-3">
           <label class="block text-sm font-medium">Description</label>
@@ -116,16 +126,14 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
       </form>
       }
 
-      <div class="flex items-center gap-2">
-        <div class="relative flex-1">
-          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2"></i>
-          <input
-            class="pl-10 w-full rounded-lg border px-3 py-2 bg-white"
-            [value]="q()"
-            (input)="onSearchInput($event)"
-            placeholder="Search products..."
-          />
-        </div>
+      <div class="relative flex-1">
+        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2"></i>
+        <input
+          class="pl-10 w-full rounded-lg border px-3 py-2 bg-white"
+          [value]="q()"
+          (input)="onSearchInput($event)"
+          placeholder="Search products..."
+        />
       </div>
 
       <div class="rounded-xl border bg-white overflow-x-auto">
@@ -133,33 +141,22 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
           <thead class="bg-neutral-50">
             <tr>
               <th class="text-left px-4 py-3">Name</th>
-              <th class="text-left px-4 py-3">SKU</th>
               <th class="text-left px-4 py-3">Price</th>
               <th class="text-left px-4 py-3">Stock</th>
-              <th class="text-left px-4 py-3">Active</th>
-              <th class="text-left px-4 py-3">Updated</th>
+              <th class="text-left px-4 py-3">Discount</th>
+              <th class="text-left px-4 py-3">Created</th>
               <th class="text-right px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
-            @for (p of page()?.items ?? []; track p.id) {
+            @for (p of page()?.content ?? []; track p.id) {
             <tr class="border-t">
               <td class="px-4 py-3">{{ p.name }}</td>
-              <!-- <td class="px-4 py-3">{{ p.sku }}</td> -->
               <td class="px-4 py-3">{{ p.price | currency : 'INR' }}</td>
               <td class="px-4 py-3">{{ p.stock_quantity }}</td>
-              <!-- <td class="px-4 py-3">
-                @if (p.active) { <span class="text-green-600">Yes</span> } @else
-                { <span class="text-red-600">No</span> }
-              </td> -->
-              <!-- <td class="px-4 py-3">{{ p.updatedAt | date : 'short' }}</td> -->
+              <td class="px-4 py-3">{{ p.discount_percent }}%</td>
+              <td class="px-4 py-3">{{ p.created_at | date : 'short' }}</td>
               <td class="px-4 py-3 text-right">
-                <button
-                  (click)="toggleActive(p)"
-                  class="rounded-lg border px-2 py-1 bg-white mr-2"
-                >
-                  <i class="pi pi-power-off"></i>
-                </button>
                 <button
                   (click)="remove(p)"
                   class="rounded-lg border px-2 py-1 bg-white text-red-600"
@@ -168,9 +165,9 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
                 </button>
               </td>
             </tr>
-            } @if (!page() || (page()?.items?.length ?? 0) === 0) {
+            } @if (!page() || (page()?.content?.length ?? 0) === 0) {
             <tr>
-              <td colspan="7" class="px-4 py-8 text-center text-neutral-500">
+              <td colspan="6" class="px-4 py-8 text-center text-neutral-500">
                 No products found.
               </td>
             </tr>
@@ -183,15 +180,17 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
         <button
           (click)="prev()"
           class="rounded-lg border px-3 py-2 bg-white"
-          [disabled]="page()?.page === 1"
+          [disabled]="(page()?.number ?? 0) === 0"
         >
           Prev
         </button>
-        <span class="text-sm">Page {{ page()?.page ?? 1 }}</span>
+        <span class="text-sm">
+          Page {{ (page()?.number ?? 0) + 1 }} of {{ page()?.totalPages ?? 1 }}
+        </span>
         <button
           (click)="next()"
           class="rounded-lg border px-3 py-2 bg-white"
-          [disabled]="(page()?.page ?? 1) >= totalPages()"
+          [disabled]="(page()?.number ?? 0) + 1 >= (page()?.totalPages ?? 1)"
         >
           Next
         </button>
@@ -205,21 +204,27 @@ export class ProductsComponent {
 
   readonly page = signal<Page<Product> | null>(null);
   readonly pageSize = signal(10);
-  readonly pageIndex = signal(1);
+  readonly pageIndex = signal(1); // User-facing page number (1-based)
   readonly q = signal('');
   readonly showForm = signal(false);
   saving = false;
 
+  // Form updated to match the new Product model
   form = this.fb.group({
     name: ['', Validators.required],
-    sku: ['', Validators.required],
-    price: [0, [Validators.required, Validators.min(0)]],
-    stock: [0, [Validators.required, Validators.min(0)]],
-    active: [true, Validators.required],
     description: [''],
+    size: [''],
+    price: [0, [Validators.required, Validators.min(0)]],
+    stock_quantity: [0, [Validators.required, Validators.min(0)]],
+    discount_percent: [
+      0,
+      [Validators.required, Validators.min(0), Validators.max(100)],
+    ],
+    image_url: [''],
   });
 
   constructor() {
+    // This reactive pipeline for searching and pagination is great!
     toObservable(this.q)
       .pipe(
         startWith(this.q()),
@@ -231,13 +236,12 @@ export class ProductsComponent {
       .subscribe((p) => this.page.set(p));
   }
 
-  // ==== Template event handlers (no casts in template) ====
   onSearchInput(event: Event) {
     const input = event.target as HTMLInputElement;
     this.q.set(input.value);
+    this.pageIndex.set(1); // Reset to first page on new search
   }
 
-  // ==== Data loading pattern ====
   fetch$() {
     return this.svc.list({
       page: this.pageIndex(),
@@ -245,21 +249,20 @@ export class ProductsComponent {
       q: this.q(),
     });
   }
+
   load() {
-    return this.fetch$()
+    this.fetch$()
       .pipe(takeUntilDestroyed())
       .subscribe((p) => this.page.set(p));
   }
 
-  totalPages() {
-    const p = this.page();
-    if (!p) return 1;
-    return Math.max(1, Math.ceil(p.total / p.pageSize));
-  }
   next() {
+    if ((this.page()?.number ?? 0) + 1 >= (this.page()?.totalPages ?? 1))
+      return;
     this.pageIndex.update((x) => x + 1);
     this.load();
   }
+
   prev() {
     this.pageIndex.update((x) => Math.max(1, x - 1));
     this.load();
@@ -268,6 +271,7 @@ export class ProductsComponent {
   toggleForm() {
     this.showForm.update((v) => !v);
   }
+
   invalid(c: string) {
     const ctrl = this.form.get(c);
     return !!ctrl && ctrl.invalid && (ctrl.touched || ctrl.dirty);
@@ -285,22 +289,16 @@ export class ProductsComponent {
       .subscribe({
         next: () => {
           this.saving = false;
-          this.form.reset({ active: true, price: 0, stock: 0 });
+          // Reset form to default state
+          this.form.reset({ price: 0, stock_quantity: 0, discount_percent: 0 });
           this.showForm.set(false);
-          this.pageIndex.set(1);
+          this.pageIndex.set(1); // Go to first page to see the new item
           this.load();
         },
         error: () => {
           this.saving = false;
         },
       });
-  }
-
-  toggleActive(p: Product) {
-    this.svc
-      .update(p.id, {})
-      .pipe(takeUntilDestroyed())
-      .subscribe(() => this.load());
   }
 
   remove(p: Product) {

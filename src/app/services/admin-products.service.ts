@@ -14,19 +14,26 @@ export interface ProductQuery {
 @Injectable({ providedIn: 'root' })
 export class AdminProductsService {
   private http = inject(HttpClient);
-  private base = '/api/v1/admin/products';
+  private base = 'http://localhost:8080/api/v1/admin/products';
 
   list(q: ProductQuery = {}): Observable<Page<Product>> {
     let params = new HttpParams();
-    if (q.page !== undefined) params = params.set('page', q.page);
+    // Note: Spring Boot pagination is often 0-indexed, so we might send page - 1
+    if (q.page !== undefined) params = params.set('page', q.page - 1);
     if (q.pageSize !== undefined) params = params.set('size', q.pageSize);
     if (q.q) params = params.set('q', q.q);
     if (q.sort) params = params.set('sort', q.sort);
+    // The service now expects the new Page<Product> structure from the API
     return this.http.get<Page<Product>>(this.base, { params });
   }
 
+  get(id: number): Observable<Product> {
+    return this.http.get<Product>(`${this.base}/${id}`);
+  }
+
   create(
-    payload: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>
+    // Payload updated to Omit 'id' and 'created_at' from the new Product model
+    payload: Omit<Product, 'id' | 'created_at'>
   ): Observable<Product> {
     return this.http.post<Product>(this.base, payload);
   }

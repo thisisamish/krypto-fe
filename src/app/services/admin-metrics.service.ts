@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class AdminMetricsService {
   private http = inject(HttpClient);
-  private base = '/api/v1/admin';
+  private base = 'http://localhost:8080/api/v1/admin';
 
   getMetrics(): Observable<AdminMetrics> {
     return this.http.get<AdminMetrics>(`${this.base}/metrics`);

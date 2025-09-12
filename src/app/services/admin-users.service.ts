@@ -16,7 +16,7 @@ export interface UserQuery {
 @Injectable({ providedIn: 'root' })
 export class AdminUsersService {
   private http = inject(HttpClient);
-  private base = '/api/v1/admin/users';
+  private base = 'http://localhost:8080/api/v1/admin/users';
 
   list(q: UserQuery = {}): Observable<Page<User>> {
     let params = new HttpParams();
