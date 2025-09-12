@@ -25,6 +25,11 @@ export class AuthService {
     this.checkAuthenticationStatus().subscribe();
   }
 
+  /** Returns true if the current user has the 'admin' role */
+  isAdmin(): boolean {
+    return this._currentUserRole$.value === 'admin';
+  }
+
   /**
    * Checks the backend for a valid session cookie and updates the login state.
    * This is called once on application startup.
