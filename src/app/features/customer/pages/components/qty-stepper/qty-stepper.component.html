@@ -1,0 +1,34 @@
+<div class="flex h-10 w-[8rem] rounded-md border border-green-600 overflow-hidden">
+  <button
+    type="button"
+    class="w-[25%] cursor-pointer bg-green-600 text-white font-medium hover:bg-green-700 transition"
+    (click)="decrement()"
+    [disabled]="disabled || value <= min"
+    aria-label="Decrease quantity"
+  >
+    −
+  </button>
+
+  <input
+    type="number"
+    class="w-[50%] text-center"
+    [value]="value"
+    [min]="min"
+    [max]="max ?? undefined"
+    [step]="step"
+    (input)="onInput($event)"
+    (blur)="onBlur()"
+    inputmode="numeric"
+    aria-label="Quantity"
+  />
+
+  <button
+    type="button"
+    class="w-[25%] cursor-pointer bg-green-600 text-white font-medium hover:bg-green-700 transition"
+    (click)="increment()"
+    [disabled]="disabled || (max !== null && value >= max)"
+    aria-label="Increase quantity"
+  >
+    +
+  </button>
+</div>
