@@ -9,6 +9,7 @@ import {
 } from '@angular/common/http';
 
 import { routes } from './app.routes';
+import { authInterceptor } from './interceptors/auth.interceptor';
 
 const withCredentialsInterceptor: HttpInterceptorFn = (req, next) => {
   // ensure all requests include cookies (session)
@@ -21,12 +22,6 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withComponentInputBinding()),
     provideAnimationsAsync(),
-    provideHttpClient(
-      withXsrfConfiguration({
-        cookieName: 'XSRF-TOKEN',
-        headerName: 'X-XSRF-TOKEN',
-      }),
-      withInterceptors([withCredentialsInterceptor])
-    ),
+    provideHttpClient(withInterceptors([authInterceptor])),
   ],
 };

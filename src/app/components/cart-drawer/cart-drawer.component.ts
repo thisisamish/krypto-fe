@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { CartService } from '../../services/cart.service'; // adjust path
 import { QtyStepperComponent } from '../qty-stepper/qty-stepper.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-cart-drawer',
@@ -108,7 +109,8 @@ import { QtyStepperComponent } from '../qty-stepper/qty-stepper.component';
             </button>
             <button
               type="button"
-              class="flex-1 rounded-md px-6 py-2 bg-green-600 cursor-pointer text-white hover:bg-green-700 transition"
+              class="flex-1 rounded-md px-6 py-2 bg-green-600 text-white hover:bg-green-700 transition"
+              (click)="goToCheckout()"
             >
               Checkout
             </button>
@@ -119,7 +121,11 @@ import { QtyStepperComponent } from '../qty-stepper/qty-stepper.component';
   `,
 })
 export class CartDrawerComponent {
-  constructor(public readonly cart: CartService) {}
+  constructor(public readonly cart: CartService, private router: Router) {}
+  goToCheckout() {
+    this.cart.closeDrawer();
+    this.router.navigate(['/checkout']);
+  }
 
   updateQty(id: string, qty: number) {
     // Note: The item object is needed to add a new item,

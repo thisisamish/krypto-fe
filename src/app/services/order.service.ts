@@ -1,38 +1,23 @@
+// src/app/services/order.service.ts
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import {
-  OrderDetails,
-  PaginatedOrderResponse,
-} from '../models/order.model';
+import { environment } from '../../environments/environment';
+import { OrderResponse, OrdersPage } from '../models/order.dto';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class OrderService {
-  private ordersUrl = 'http://localhost:8080/api/v1/orders';
+  private base = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Fetches a paginated list of the current user's orders.
-   */
-  getMyOrders(page: number, size: number): Observable<PaginatedOrderResponse> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
-
-    return this.http.get<PaginatedOrderResponse>(this.ordersUrl, {
-      params,
-      withCredentials: true,
-    });
+  list(page = 0, size = 10) {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.http.get<OrdersPage>(`${this.base}/api/v1/orders`, { params });
   }
 
-  /**
-   * Fetches the details of a single order by its order number.
-   */
-  getOrderByOrderNumber(orderNumber: string): Observable<OrderDetails> {
-    const url = `${this.ordersUrl}/${orderNumber}`;
-    return this.http.get<OrderDetails>(url, { withCredentials: true });
+  getByOrderNumber(orderNumber: string) {
+    return this.http.get<OrderResponse>(
+      `${this.base}/api/v1/orders/${orderNumber}`
+    );
   }
 }

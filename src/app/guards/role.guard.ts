@@ -1,32 +1,27 @@
+// src/app/guards/role.guard.ts
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
-import { AuthService } from '../services/auth.service';
-import { map, take } from 'rxjs';
+import { CanActivateFn, Router, UrlTree } from '@angular/router';
+import { AuthTokenService } from '../services/auth-token.service';
 
-/**
- * This guard protects routes based on user role (e.g., 'admin').
- * It checks the currentUserRole$ from AuthService against the expected role
- * defined in the route's data configuration.
- */
-export const roleGuard: CanActivateFn = (route, state) => {
-  const authService = inject(AuthService);
+export const roleGuard: CanActivateFn = (route): boolean | UrlTree => {
+  const token = inject(AuthTokenService);
   const router = inject(Router);
 
-  const expectedRole = route.data['expectedRole'];
-
+  const expectedRole: string | undefined = route.data?.['expectedRole'];
   if (!expectedRole) {
     throw new Error('Expected role is not defined in the route data.');
   }
 
-  return authService.currentUserRole$.pipe(
-    take(1),
-    map((role) => {
-      if (role === expectedRole) {
-        return true;
-      }
-      // If the role does not match, redirect to the home page or a 'forbidden' page.
-      router.navigate(['/']);
-      return false;
-    })
-  );
+  if (!token.isLoggedIn()) {
+    return router.createUrlTree(['/login']);
+  }
+
+  const roles = token.roles.map((r) => r.toLowerCase());
+  const want = expectedRole.toLowerCase();
+
+  if (roles.includes(want)) {
+    return true;
+  }
+
+  return router.createUrlTree(['/']);
 };

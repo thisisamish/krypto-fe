@@ -1,4 +1,7 @@
+// src/app/services/cart.service.ts
 import { Injectable, computed, signal } from '@angular/core';
+import { CartApiService } from './cart-api.service';
+import { firstValueFrom } from 'rxjs';
 
 export interface Product {
   id?: string | number;
@@ -13,11 +16,8 @@ type CartMap = Record<string, { qty: number; item: Product }>;
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly _cart = signal<CartMap>({});
-
-  // Drawer state (simple global UI flag)
   readonly drawerOpen = signal(false);
 
-  /** All entries as an array with line totals (easy for *ngFor) */
   readonly entries = computed(() => {
     const map = this._cart();
     return Object.entries(map).map(([id, { qty, item }]) => ({
@@ -28,57 +28,85 @@ export class CartService {
     }));
   });
 
-  /** Total item count across all products */
   readonly totalCount = computed(() =>
-    this.entries().reduce((sum, e) => sum + e.qty, 0)
+    this.entries().reduce((s, e) => s + e.qty, 0)
   );
-
-  /** Cart subtotal (sum of line totals) */
   readonly subtotal = computed(() =>
-    this.entries().reduce((sum, e) => sum + e.lineTotal, 0)
+    this.entries().reduce((s, e) => s + e.lineTotal, 0)
   );
 
-  /** Per-product quantity signal */
+  constructor(private api: CartApiService) {
+    this.hydrateFromServer();
+  }
+
+  /** Sync from backend at app start (or after login) */
+  async hydrateFromServer() {
+    try {
+      const res = await firstValueFrom(this.api.getCart());
+      const map: CartMap = {};
+      for (const it of res.items ?? []) {
+        map[String(it.productId)] = {
+          qty: it.quantity,
+          item: {
+            id: it.productId,
+            name: it.productName,
+            price: it.unitPrice,
+          },
+        };
+      }
+      this._cart.set(map);
+    } catch {
+      // not logged in / empty cart—ignore
+    }
+  }
+
   itemQty(id: string) {
     return computed(() => this._cart()[id]?.qty ?? 0);
   }
 
-  /** Set absolute quantity; pass item so we can compute totals */
-  setQuantity(id: string, qty: number, item?: Product) {
+  /** Add or set quantity (syncs server via POST or PUT) */
+  async setQuantity(id: string, qty: number, item?: Product) {
+    const productId = Number(id);
     const next = Math.max(0, Math.trunc(+qty || 0));
-    this._cart.update((cart) => {
-      const copy = { ...cart };
-      if (next === 0) {
-        delete copy[id];
+    try {
+      let res;
+      if ((this._cart()[id]?.qty ?? 0) === 0 && next > 0) {
+        res = await firstValueFrom(
+          this.api.addItem({ productId, quantity: next })
+        );
       } else {
-        const prev = copy[id]?.item;
-        copy[id] = { qty: next, item: item ?? prev ?? { ...fallbackItem(id) } };
+        res = await firstValueFrom(
+          this.api.updateItem(productId, { quantity: next })
+        );
       }
-      return copy;
-    });
+      this.applyServerCart(res);
+    } catch (e) {
+      console.error('Cart update failed', e);
+      // optimistic fallback to local state to avoid UI dead-ends
+      this._cart.update((cart) => {
+        const copy = { ...cart };
+        if (next === 0) delete copy[id];
+        else
+          copy[id] = {
+            qty: next,
+            item: item ?? copy[id]?.item ?? fallbackItem(id),
+          };
+        return copy;
+      });
+    }
   }
 
-  /** Increment/decrement quantity */
   changeBy(id: string, delta: number, item?: Product) {
-    this._cart.update((cart) => {
-      const cur = cart[id]?.qty ?? 0;
-      const next = Math.max(0, cur + Math.trunc(+delta || 0));
-      const copy = { ...cart };
-      if (next === 0) {
-        delete copy[id];
-      } else {
-        const prev = copy[id]?.item;
-        copy[id] = { qty: next, item: item ?? prev ?? { ...fallbackItem(id) } };
-      }
-      return copy;
-    });
+    const cur = this._cart()[id]?.qty ?? 0;
+    return this.setQuantity(id, cur + delta, item);
   }
 
   clear() {
-    this._cart.set({});
+    // If you have a clear API, call it; otherwise set 0 for each product in parallel.
+    const ids = Object.keys(this._cart());
+    ids.forEach((id) => this.setQuantity(id, 0));
   }
 
-  // Drawer helpers
   openDrawer() {
     this.drawerOpen.set(true);
   }
@@ -87,6 +115,21 @@ export class CartService {
   }
   toggleDrawer() {
     this.drawerOpen.update((v) => !v);
+  }
+
+  private applyServerCart(res: { items: any[] }) {
+    const map: CartMap = {};
+    for (const it of res.items ?? []) {
+      map[String(it.productId)] = {
+        qty: it.quantity,
+        item: {
+          id: it.productId,
+          name: it.productName,
+          price: it.unitPrice,
+        },
+      };
+    }
+    this._cart.set(map);
   }
 }
 

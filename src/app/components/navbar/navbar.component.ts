@@ -1,3 +1,4 @@
+// src/app/components/navbar/navbar.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CartService } from '../../services/cart.service';
@@ -10,46 +11,27 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule],
   template: `
     <nav class="flex justify-between items-center h-[4rem]">
-      <div>
-        <p class="text-[1.7rem] font-black">KRYPTO</p>
-      </div>
+      <div><p class="text-[1.7rem] font-black">KRYPTO</p></div>
 
-      <!-- Show login button if user is not logged in -->
-      <div *ngIf="!(auth.isLoggedIn$ | async)">
+      <div *ngIf="!auth.isLoggedIn()">
         <button
-          class="rounded-md px-6 py-2 bg-green-600 cursor-pointer text-white hover:bg-green-700 transition"
+          class="rounded-md px-6 py-2 bg-green-600 text-white"
           (click)="router.navigate(['/login'])"
         >
           Login
         </button>
       </div>
 
-      <!-- Show customer-specific buttons only if logged in AND role is CUSTOMER -->
-      <div
-        *ngIf="(auth.isLoggedIn$ | async) && !auth.isAdmin()"
-        class="flex gap-4 items-center"
-      >
-        <!-- LOGOUT button -->
+      <div *ngIf="auth.isLoggedIn()" class="flex gap-4 items-center">
         <button
           type="button"
           class="btn btn-ghost btn-md rounded-full !w-10 !h-10 p-0"
-          (click)="logout()"
+          (click)="onLogout()"
           aria-label="Logout"
         >
           <span class="pi pi-sign-out"></span>
         </button>
 
-        <!-- ACCOUNT button -->
-        <button
-          type="button"
-          class="btn btn-ghost btn-md rounded-full !w-10 !h-10 p-0"
-          (click)="goToProfile()"
-          aria-label="Account"
-        >
-          <span class="pi pi-user"></span>
-        </button>
-
-        <!-- CART button -->
         <div class="relative">
           <button
             type="button"
@@ -66,27 +48,25 @@ import { AuthService } from '../../services/auth.service';
             {{ cart.totalCount() }}
           </span>
         </div>
+
+        <button
+          class="rounded-md px-4 py-2 bg-gray-100"
+          (click)="router.navigate(['/orders'])"
+        >
+          My Orders
+        </button>
       </div>
     </nav>
   `,
 })
 export class NavbarComponent {
   constructor(
-    public readonly cart: CartService,
-    public readonly router: Router,
-    public readonly auth: AuthService
+    public cart: CartService,
+    public router: Router,
+    public auth: AuthService
   ) {}
-
-  logout(): void {
-    this.auth.logout().subscribe({
-      // Navigation is now handled inside the auth service for consistency
-      error: (err) => {
-        console.error('Logout failed', err);
-      },
-    });
-  }
-
-  goToProfile() {
-    this.router.navigate(['/profile']);
+  onLogout() {
+    this.auth.logout();
+    this.router.navigate(['/']);
   }
 }

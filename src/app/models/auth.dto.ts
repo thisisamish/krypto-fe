@@ -9,7 +9,12 @@ export interface RegisterPayload {
   contactNo: string;
 }
 
-export interface LoginPayload {
-  username: string; // you already use "username" (not email)
-  password: string;
-}
+// src/app/models/auth.dto.ts
+export type LoginPayload = { identifier: string; password: string };
+
+export type LoginResponse = {
+  accessToken: string;
+  roles: string[]; // e.g. ["CUSTOMER"]
+  expiresIn: number; // seconds
+  tokenType: 'Bearer'; // or generic string
+};

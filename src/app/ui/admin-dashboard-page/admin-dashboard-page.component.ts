@@ -74,9 +74,7 @@ export class AdminDashboardPageComponent {
   private router = inject(Router);
 
   logout(): void {
-    this.authService.logout().subscribe({
-      next: () => this.router.navigate(['/login']),
-      error: (err) => console.error('Logout failed', err),
-    });
+    this.authService.logout(); // <-- synchronous now
+    this.router.navigate(['/login']);
   }
 }

@@ -2,6 +2,9 @@ import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
 import { ProfilePageComponent } from './ui/profile-page/profile-page.component';
+import { CheckoutPageComponent } from './ui/checkout-page/checkout-page.component';
+import { OrderConfirmationPageComponent } from './ui/order-confirmation-page/order-confirmation-page.component';
+import { OrdersListPageComponent } from './ui/orders-list-page/orders-list-page.component';
 
 export const routes: Routes = [
   {
@@ -17,6 +20,21 @@ export const routes: Routes = [
       import('./ui/login-page/login-page.component').then(
         (m) => m.LoginPageComponent
       ),
+  },
+  {
+    path: 'checkout',
+    component: CheckoutPageComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'order/:orderNumber',
+    component: OrderConfirmationPageComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'orders',
+    component: OrdersListPageComponent,
+    canActivate: [authGuard],
   },
   {
     path: 'register',

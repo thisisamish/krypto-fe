@@ -11,8 +11,9 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { CartService } from '../../services/cart.service'; // adjust path
 import { QtyStepperComponent } from '../qty-stepper/qty-stepper.component';
 
+// ensure your product model used by ProductCard has id:number
 type Product = {
-  id?: string | number;
+  id: number; // <= make this required & number if possible
   name: string;
   size?: string;
   price: number;
