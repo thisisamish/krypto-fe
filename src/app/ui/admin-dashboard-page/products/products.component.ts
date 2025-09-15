@@ -1,24 +1,16 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { AsyncPipe, DatePipe, CurrencyPipe } from '@angular/common';
+// app/features/admin/products/products.component.ts
+import { Component, inject, signal } from '@angular/core';
+import { AsyncPipe, CurrencyPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AdminProductsService } from '../../../services/admin-products.service';
-import {
-  PaginatedProductResponse,
-  Product,
-} from '../../../models/product.model';
-import {
-  debounceTime,
-  distinctUntilChanged,
-  startWith,
-  switchMap,
-} from 'rxjs/operators';
-import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Page } from '../../../models/pagination.model';
+import { Product } from '../../../models/product.model';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   standalone: true,
   selector: 'app-products',
-  imports: [AsyncPipe, DatePipe, CurrencyPipe, ReactiveFormsModule],
+  imports: [AsyncPipe, CurrencyPipe, ReactiveFormsModule],
   template: `
     <section class="space-y-6">
       <header class="flex items-center justify-between">
@@ -42,27 +34,26 @@ import { Page } from '../../../models/pagination.model';
           <input
             formControlName="name"
             class="mt-1 w-full rounded-lg border px-3 py-2"
-            placeholder="Product name"
           />
           @if (invalid('name')) {
           <p class="text-sm text-red-600 mt-1">Name is required</p>
           }
         </div>
-        <div>
-          <label class="block text-sm font-medium">Size</label>
-          <input
-            formControlName="size"
-            class="mt-1 w-full rounded-lg border px-3 py-2"
-            placeholder="e.g., Large, 1kg"
-          />
-        </div>
-        <div>
+        <div class="sm:col-span-2">
           <label class="block text-sm font-medium">Image URL</label>
           <input
-            formControlName="image_url"
+            formControlName="imageUrl"
             class="mt-1 w-full rounded-lg border px-3 py-2"
             placeholder="https://..."
           />
+        </div>
+        <div class="sm:col-span-3">
+          <label class="block text-sm font-medium">Description</label>
+          <textarea
+            formControlName="description"
+            rows="3"
+            class="mt-1 w-full rounded-lg border px-3 py-2"
+          ></textarea>
         </div>
         <div>
           <label class="block text-sm font-medium">Price</label>
@@ -70,7 +61,6 @@ import { Page } from '../../../models/pagination.model';
             type="number"
             formControlName="price"
             class="mt-1 w-full rounded-lg border px-3 py-2"
-            placeholder="0"
           />
           @if (invalid('price')) {
           <p class="text-sm text-red-600 mt-1">Price must be ≥ 0</p>
@@ -80,33 +70,12 @@ import { Page } from '../../../models/pagination.model';
           <label class="block text-sm font-medium">Stock Quantity</label>
           <input
             type="number"
-            formControlName="stock_quantity"
+            formControlName="stockQuantity"
             class="mt-1 w-full rounded-lg border px-3 py-2"
-            placeholder="0"
           />
-          @if (invalid('stock_quantity')) {
+          @if (invalid('stockQuantity')) {
           <p class="text-sm text-red-600 mt-1">Stock must be ≥ 0</p>
           }
-        </div>
-        <div>
-          <label class="block text-sm font-medium">Discount Percent</label>
-          <input
-            type="number"
-            formControlName="discount_percent"
-            class="mt-1 w-full rounded-lg border px-3 py-2"
-            placeholder="0"
-          />
-          @if (invalid('discount_percent')) {
-          <p class="text-sm text-red-600 mt-1">Discount must be 0-100</p>
-          }
-        </div>
-        <div class="sm:col-span-3">
-          <label class="block text-sm font-medium">Description</label>
-          <textarea
-            formControlName="description"
-            rows="3"
-            class="mt-1 w-full rounded-lg border px-3 py-2"
-          ></textarea>
         </div>
         <div class="sm:col-span-3 flex items-center gap-2">
           <button
@@ -126,16 +95,6 @@ import { Page } from '../../../models/pagination.model';
       </form>
       }
 
-      <div class="relative flex-1">
-        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2"></i>
-        <input
-          class="pl-10 w-full rounded-lg border px-3 py-2 bg-white"
-          [value]="q()"
-          (input)="onSearchInput($event)"
-          placeholder="Search products..."
-        />
-      </div>
-
       <div class="rounded-xl border bg-white overflow-x-auto">
         <table class="min-w-full text-sm">
           <thead class="bg-neutral-50">
@@ -143,8 +102,6 @@ import { Page } from '../../../models/pagination.model';
               <th class="text-left px-4 py-3">Name</th>
               <th class="text-left px-4 py-3">Price</th>
               <th class="text-left px-4 py-3">Stock</th>
-              <th class="text-left px-4 py-3">Discount</th>
-              <th class="text-left px-4 py-3">Created</th>
               <th class="text-right px-4 py-3">Actions</th>
             </tr>
           </thead>
@@ -154,8 +111,6 @@ import { Page } from '../../../models/pagination.model';
               <td class="px-4 py-3">{{ p.name }}</td>
               <td class="px-4 py-3">{{ p.price | currency : 'INR' }}</td>
               <td class="px-4 py-3">{{ p.stock_quantity }}</td>
-              <td class="px-4 py-3">{{ p.discount_percent }}%</td>
-              <td class="px-4 py-3">{{ p.created_at | date : 'short' }}</td>
               <td class="px-4 py-3 text-right">
                 <button
                   (click)="remove(p)"
@@ -167,7 +122,7 @@ import { Page } from '../../../models/pagination.model';
             </tr>
             } @if (!page() || (page()?.content?.length ?? 0) === 0) {
             <tr>
-              <td colspan="6" class="px-4 py-8 text-center text-neutral-500">
+              <td colspan="4" class="px-4 py-8 text-center text-neutral-500">
                 No products found.
               </td>
             </tr>
@@ -184,9 +139,10 @@ import { Page } from '../../../models/pagination.model';
         >
           Prev
         </button>
-        <span class="text-sm">
-          Page {{ (page()?.number ?? 0) + 1 }} of {{ page()?.totalPages ?? 1 }}
-        </span>
+        <span class="text-sm"
+          >Page {{ (page()?.number ?? 0) + 1 }} of
+          {{ page()?.totalPages ?? 1 }}</span
+        >
         <button
           (click)="next()"
           class="rounded-lg border px-3 py-2 bg-white"
@@ -204,50 +160,24 @@ export class ProductsComponent {
 
   readonly page = signal<Page<Product> | null>(null);
   readonly pageSize = signal(10);
-  readonly pageIndex = signal(1); // User-facing page number (1-based)
-  readonly q = signal('');
+  readonly pageIndex = signal(1);
   readonly showForm = signal(false);
   saving = false;
 
-  // Form updated to match the new Product model
   form = this.fb.group({
     name: ['', Validators.required],
     description: [''],
-    size: [''],
     price: [0, [Validators.required, Validators.min(0)]],
-    stock_quantity: [0, [Validators.required, Validators.min(0)]],
-    discount_percent: [
-      0,
-      [Validators.required, Validators.min(0), Validators.max(100)],
-    ],
-    image_url: [''],
+    stockQuantity: [0, [Validators.required, Validators.min(0)]],
+    imageUrl: [''],
   });
 
   constructor() {
-    // This reactive pipeline for searching and pagination is great!
-    toObservable(this.q)
-      .pipe(
-        startWith(this.q()),
-        debounceTime(300),
-        distinctUntilChanged(),
-        switchMap(() => this.fetch$()),
-        takeUntilDestroyed()
-      )
-      .subscribe((p) => this.page.set(p));
-  }
-
-  onSearchInput(event: Event) {
-    const input = event.target as HTMLInputElement;
-    this.q.set(input.value);
-    this.pageIndex.set(1); // Reset to first page on new search
+    this.load();
   }
 
   fetch$() {
-    return this.svc.list({
-      page: this.pageIndex(),
-      pageSize: this.pageSize(),
-      q: this.q(),
-    });
+    return this.svc.list({ page: this.pageIndex(), pageSize: this.pageSize() });
   }
 
   load() {
@@ -262,7 +192,6 @@ export class ProductsComponent {
     this.pageIndex.update((x) => x + 1);
     this.load();
   }
-
   prev() {
     this.pageIndex.update((x) => Math.max(1, x - 1));
     this.load();
@@ -289,15 +218,12 @@ export class ProductsComponent {
       .subscribe({
         next: () => {
           this.saving = false;
-          // Reset form to default state
-          this.form.reset({ price: 0, stock_quantity: 0, discount_percent: 0 });
+          this.form.reset({ price: 0, stockQuantity: 0 });
           this.showForm.set(false);
-          this.pageIndex.set(1); // Go to first page to see the new item
+          this.pageIndex.set(1);
           this.load();
         },
-        error: () => {
-          this.saving = false;
-        },
+        error: () => (this.saving = false),
       });
   }
 

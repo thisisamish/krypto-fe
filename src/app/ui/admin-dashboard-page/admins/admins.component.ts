@@ -1,23 +1,23 @@
+// app/features/admin/admins/admins.component.ts
 import { Component, inject, signal } from '@angular/core';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AdminAdminsService } from '../../../services/admin-admins.service';
 import { Page } from '../../../models/pagination.model';
 import { User } from '../../../models/user.model';
+import { emailValidator } from '../../../shared/validators';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   debounceTime,
   distinctUntilChanged,
-  switchMap,
   startWith,
+  switchMap,
 } from 'rxjs/operators';
-import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { emailValidator } from '../../../shared/validators';
-import { StrongPasswordDirective } from '../../../directives/strong-password.directive';
 
 @Component({
   standalone: true,
   selector: 'app-admins',
-  imports: [AsyncPipe, DatePipe, ReactiveFormsModule, StrongPasswordDirective],
+  imports: [DatePipe, ReactiveFormsModule],
   template: `
     <section class="space-y-6">
       <header class="flex items-center justify-between">
@@ -37,24 +37,21 @@ import { StrongPasswordDirective } from '../../../directives/strong-password.dir
         class="rounded-xl border bg-white p-4 grid sm:grid-cols-3 gap-4"
       >
         <div>
-          <label class="block text-sm font-medium">Name</label>
+          <label class="block text-sm font-medium">Username</label>
           <input
-            class="mt-1 w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring"
-            formControlName="name"
-            type="text"
-            placeholder="Admin name"
+            class="mt-1 w-full rounded-lg border px-3 py-2"
+            formControlName="username"
           />
-          @if (invalid('name')) {
-          <p class="mt-1 text-sm text-red-600">Name is required.</p>
+          @if (invalid('username')) {
+          <p class="mt-1 text-sm text-red-600">Username is required.</p>
           }
         </div>
         <div>
           <label class="block text-sm font-medium">Email</label>
           <input
-            class="mt-1 w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring"
+            class="mt-1 w-full rounded-lg border px-3 py-2"
             formControlName="email"
             type="email"
-            placeholder="admin@example.com"
           />
           @if (invalid('email')) {
           <p class="mt-1 text-sm text-red-600">Valid email is required.</p>
@@ -63,16 +60,12 @@ import { StrongPasswordDirective } from '../../../directives/strong-password.dir
         <div>
           <label class="block text-sm font-medium">Password</label>
           <input
-            class="mt-1 w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring"
-            strongPassword
+            class="mt-1 w-full rounded-lg border px-3 py-2"
             formControlName="password"
             type="password"
-            placeholder="Strong password"
           />
           @if (invalid('password')) {
-          <p class="mt-1 text-sm text-red-600">
-            A strong password is required.
-          </p>
+          <p class="mt-1 text-sm text-red-600">Password is required.</p>
           }
         </div>
         <div class="sm:col-span-3 flex items-center gap-2">
@@ -99,7 +92,7 @@ import { StrongPasswordDirective } from '../../../directives/strong-password.dir
           class="pl-10 w-full rounded-lg border px-3 py-2 bg-white"
           [value]="q()"
           (input)="onSearchInput($event)"
-          placeholder="Search admins by name or email..."
+          placeholder="Search admins by username/email..."
         />
       </div>
 
@@ -107,9 +100,9 @@ import { StrongPasswordDirective } from '../../../directives/strong-password.dir
         <table class="min-w-full text-sm">
           <thead class="bg-neutral-50">
             <tr>
-              <th class="text-left px-4 py-3">Name</th>
+              <th class="text-left px-4 py-3">Username</th>
               <th class="text-left px-4 py-3">Email</th>
-              <th class="text-left px-4 py-3">Active</th>
+              <th class="text-left px-4 py-3">Role</th>
               <th class="text-left px-4 py-3">Created</th>
               <th class="text-right px-4 py-3">Actions</th>
             </tr>
@@ -117,25 +110,20 @@ import { StrongPasswordDirective } from '../../../directives/strong-password.dir
           <tbody>
             @for (a of page()?.content ?? []; track a.id) {
             <tr class="border-t">
-              <td class="px-4 py-3">{{ a.name }}</td>
+              <td class="px-4 py-3">{{ a.username }}</td>
               <td class="px-4 py-3">{{ a.email }}</td>
-              <td class="px-4 py-3">
-                @if (a.active) {<span class="text-green-600">Yes</span>} @else
-                {<span class="text-red-600">No</span>}
-              </td>
+              <td class="px-4 py-3">{{ a.role }}</td>
               <td class="px-4 py-3">{{ a.createdAt | date : 'mediumDate' }}</td>
               <td class="px-4 py-3 text-right">
                 <button
-                  (click)="edit(a)"
+                  (click)="editEmail(a)"
                   class="rounded-lg border px-2 py-1 bg-white mr-2"
-                  title="Toggle Active Status"
                 >
-                  <i class="pi pi-power-off"></i>
+                  <i class="pi pi-pencil"></i>
                 </button>
                 <button
                   (click)="remove(a)"
                   class="rounded-lg border px-2 py-1 bg-white text-red-600"
-                  title="Delete Admin"
                 >
                   <i class="pi pi-trash"></i>
                 </button>
@@ -160,9 +148,10 @@ import { StrongPasswordDirective } from '../../../directives/strong-password.dir
         >
           Prev
         </button>
-        <span class="text-sm">
-          Page {{ (page()?.number ?? 0) + 1 }} of {{ page()?.totalPages ?? 1 }}
-        </span>
+        <span class="text-sm"
+          >Page {{ (page()?.number ?? 0) + 1 }} of
+          {{ page()?.totalPages ?? 1 }}</span
+        >
         <button
           (click)="next()"
           class="rounded-lg border px-3 py-2 bg-white"
@@ -180,13 +169,13 @@ export class AdminsComponent {
 
   readonly page = signal<Page<User> | null>(null);
   readonly pageSize = signal(10);
-  readonly pageIndex = signal(1); // User-facing page number (1-based)
+  readonly pageIndex = signal(1);
   readonly q = signal('');
   readonly showCreate = signal(false);
   creating = false;
 
   createForm = this.fb.group({
-    name: ['', Validators.required],
+    username: ['', Validators.required],
     email: ['', [Validators.required, emailValidator]],
     password: ['', Validators.required],
   });
@@ -205,10 +194,10 @@ export class AdminsComponent {
 
   fetch$() {
     return this.svc.list({
-      // The service should handle converting this 1-based index to 0-based for the API
       page: this.pageIndex(),
       pageSize: this.pageSize(),
       q: this.q(),
+      // role: 'ADMIN',
     });
   }
 
@@ -218,11 +207,9 @@ export class AdminsComponent {
       .subscribe((p) => this.page.set(p));
   }
 
-  onSearchInput(event: Event) {
-    const input = event.target as HTMLInputElement;
-    this.q.set(input.value);
-    // ADDED: Reset to first page on a new search for better UX
+  onSearchInput(e: Event) {
     this.pageIndex.set(1);
+    this.q.set((e.target as HTMLInputElement).value);
   }
 
   toggleCreate() {
@@ -233,8 +220,6 @@ export class AdminsComponent {
     const c = this.createForm.get(ctrl);
     return !!c && c.invalid && (c.touched || c.dirty);
   }
-
-  // REMOVED: Redundant fetch() method
 
   next() {
     if ((this.page()?.number ?? 0) + 1 >= (this.page()?.totalPages ?? 1))
@@ -263,31 +248,26 @@ export class AdminsComponent {
           this.createForm.reset();
           this.showCreate.set(false);
           this.pageIndex.set(1);
-          // CHANGED: Use the consistent load() method
           this.load();
         },
-        error: () => {
-          this.creating = false;
-        },
+        error: () => (this.creating = false),
       });
   }
 
-  edit(a: User) {
-    // This example toggles the active state.
-    // In a real app, you would likely open a modal with an edit form.
+  editEmail(a: User) {
+    const email = prompt('New email for ' + a.username, a.email || '');
+    if (!email) return;
     this.svc
-      .update(a.id, { active: !a.active })
+      .update(a.username ?? '', { email })
       .pipe(takeUntilDestroyed())
-      // CHANGED: Use the consistent load() method
       .subscribe(() => this.load());
   }
 
   remove(a: User) {
-    if (!confirm(`Are you sure you want to delete admin ${a.name}?`)) return;
+    if (!confirm(`Delete admin ${a.username}?`)) return;
     this.svc
-      .delete(a.id)
+      .delete(a.username ?? '')
       .pipe(takeUntilDestroyed())
-      // CHANGED: Use the consistent load() method
       .subscribe(() => this.load());
   }
 }

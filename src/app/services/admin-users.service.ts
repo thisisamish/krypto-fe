@@ -18,15 +18,23 @@ export class AdminUsersService {
   private http = inject(HttpClient);
   private base = 'http://localhost:8080/api/v1/admin/users';
 
-  list(q: UserQuery = {}): Observable<Page<User>> {
-    let params = new HttpParams();
-    if (q.page !== undefined) params = params.set('page', q.page);
-    if (q.pageSize !== undefined) params = params.set('size', q.pageSize);
-    if (q.q) params = params.set('q', q.q);
-    if (q.role) params = params.set('role', q.role);
-    if (q.status) params = params.set('status', q.status);
-    if (q.sort) params = params.set('sort', q.sort);
-    return this.http.get<Page<User>>(this.base, { params });
+  list({
+    page,
+    pageSize,
+    q,
+    role,
+  }: {
+    page: number;
+    pageSize: number;
+    q?: string;
+    role?: 'ADMIN' | 'CUSTOMER';
+  }) {
+    let params = new HttpParams()
+      .set('page', String(page - 1))
+      .set('size', String(pageSize));
+    if (q) params = params.set('q', q);
+    if (role) params = params.set('role', role);
+    return this.http.get<Page<User>>('/api/v1/users', { params });
   }
 
   forceLogout(userId: string): Observable<void> {

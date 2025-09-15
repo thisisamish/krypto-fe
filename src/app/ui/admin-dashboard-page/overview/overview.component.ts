@@ -1,11 +1,12 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
-import { AsyncPipe, DatePipe, CurrencyPipe } from '@angular/common';
+// app/features/admin/overview/overview.component.ts
+import { Component, inject, signal } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
 import { AdminMetricsService } from '../../../services/admin-metrics.service';
 
 @Component({
   standalone: true,
   selector: 'app-overview',
-  imports: [AsyncPipe, DatePipe, CurrencyPipe],
+  imports: [AsyncPipe],
   template: `
     <section class="space-y-6">
       <header class="flex items-center justify-between">
@@ -18,16 +19,7 @@ import { AdminMetricsService } from '../../../services/admin-metrics.service';
             <i class="pi pi-shopping-bag"></i> Total Orders
           </div>
           <div class="mt-2 text-3xl font-bold">
-            {{ metrics()?.totalOrders ?? '—' }}
-          </div>
-        </div>
-
-        <div class="rounded-xl border bg-white p-4">
-          <div class="text-sm text-neutral-500 flex items-center gap-2">
-            <i class="pi pi-dollar"></i> Total Revenue
-          </div>
-          <div class="mt-2 text-3xl font-bold">
-            {{ metrics()?.totalRevenue | currency : 'INR' : 'symbol' }}
+            {{ counts()?.totalOrders ?? '—' }}
           </div>
         </div>
 
@@ -36,7 +28,16 @@ import { AdminMetricsService } from '../../../services/admin-metrics.service';
             <i class="pi pi-users"></i> Total Customers
           </div>
           <div class="mt-2 text-3xl font-bold">
-            {{ metrics()?.totalCustomers ?? '—' }}
+            {{ counts()?.totalCustomers ?? '—' }}
+          </div>
+        </div>
+
+        <div class="rounded-xl border bg-white p-4">
+          <div class="text-sm text-neutral-500 flex items-center gap-2">
+            <i class="pi pi-shield"></i> Total Admins
+          </div>
+          <div class="mt-2 text-3xl font-bold">
+            {{ counts()?.totalAdmins ?? '—' }}
           </div>
         </div>
       </div>
@@ -45,13 +46,13 @@ import { AdminMetricsService } from '../../../services/admin-metrics.service';
 })
 export class OverviewComponent {
   private metricsSvc = inject(AdminMetricsService);
-  readonly metrics = signal<{
+  readonly counts = signal<{
     totalOrders: number;
-    totalRevenue: number;
     totalCustomers: number;
+    totalAdmins: number;
   } | null>(null);
 
   constructor() {
-    this.metricsSvc.getMetrics().subscribe((m) => this.metrics.set(m));
+    this.metricsSvc.getCounts().subscribe((v) => this.counts.set(v));
   }
 }

@@ -16,31 +16,26 @@ export class AdminAdminsService {
   private http = inject(HttpClient);
   private base = '/api/v1/admin/admins';
 
-  list(q: AdminQuery = {}): Observable<Page<User>> {
-    let params = new HttpParams();
-    if (q.page !== undefined) params = params.set('page', q.page);
-    if (q.pageSize !== undefined) params = params.set('size', q.pageSize);
-    if (q.q) params = params.set('q', q.q);
-    if (q.sort) params = params.set('sort', q.sort);
-    return this.http.get<Page<User>>(this.base, { params });
+  list({ page, pageSize, q }: { page: number; pageSize: number; q?: string }) {
+    let params = new HttpParams()
+      .set('page', String(page - 1))
+      .set('size', String(pageSize))
+      .set('role', 'ADMIN');
+    if (q) params = params.set('q', q);
+    return this.http.get<Page<User>>('/api/v1/users', { params });
   }
-
-  create(payload: {
-    name: string;
-    email: string;
-    password: string;
-  }): Observable<User> {
-    return this.http.post<User>(this.base, payload);
+  create(body: { username: string; email: string; password: string }) {
+    return this.http.post<User>('/api/v1/users', body);
   }
-
-  update(
-    id: string,
-    payload: Partial<Pick<User, 'name' | 'email' | 'active'>>
-  ): Observable<User> {
-    return this.http.put<User>(`${this.base}/${id}`, payload);
+  update(username: string, payload: Partial<Pick<User, 'email'>>) {
+    return this.http.put<User>(
+      `/api/v1/users/${encodeURIComponent(username)}`,
+      payload
+    );
   }
-
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.base}/${id}`);
+  delete(username: string) {
+    return this.http.delete<void>(
+      `/api/v1/users/${encodeURIComponent(username)}`
+    );
   }
 }
